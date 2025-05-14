@@ -1,42 +1,27 @@
-# .github/workflows/publish-ghcr.yml
-name: Publish to GitHub Container Registry
+name: Dev CI
 
-# triggers when you push to master (or change to main if that’s your primary branch)
 on:
   push:
-    branches:
-      - master
-
-permissions:
-  contents: read       # needed to checkout code
-  packages: write      # needed to push to GHCR
+    branches: [ develop ]
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out your code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract image metadata (tags, labels)
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          # point at your GHCR namespace/repo
-          images: ghcr.io/${{ github.repository }}/testnodejsapp
-
-      - name: Build & push image to GHCR
-        uses: docker/build-push-action@v5
+      - name: Build and push Docker image to DEV registry
+        uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/simple-app-dev:latest
