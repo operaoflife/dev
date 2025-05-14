@@ -1,8 +1,9 @@
+# .github/workflows/docker-prod.yml
 name: Publish Prod Image
 
 permissions:
-  contents: read
-  packages: write
+  contents: read      # for checkout
+  packages: write     # to push to GHCR
 
 on:
   push:
@@ -12,11 +13,12 @@ on:
 jobs:
   build-and-publish-prod:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up QEMU
+      - name: Set up QEMU (for cross-platform builds)
         uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
@@ -29,11 +31,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push prod image
-        uses: docker/build-push-action@v4
+      - name: Extract image metadata (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}/myapp
+
+      - name: Build & push prod image
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/myapp:latest
             ghcr.io/${{ github.repository }}/myapp:prod-${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
