@@ -4,7 +4,7 @@ const port = process.env.PORT || 3000;
 
 const requestHandler = (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello from GitHub Actions CI/CD!');
+  res.end('Hello from GitHub Actions CI/CD without Docker!');
 };
 
 const server = http.createServer(requestHandler);
