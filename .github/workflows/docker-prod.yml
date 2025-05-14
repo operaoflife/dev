@@ -1,0 +1,28 @@
+name: Build & Push to Prod Registry
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  docker-prod:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to prod registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PROD_REGISTRY_USERNAME }}
+          password: ${{ secrets.PROD_REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image to prod
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}/prod-nodeapp:latest
