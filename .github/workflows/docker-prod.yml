@@ -1,4 +1,4 @@
-name: Build & Push to Prod Registry
+name: Build & Push to GHCR Prod
 
 on:
   push:
@@ -13,16 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Log in to prod registry
+      - name: Log in to GitHub Container Registry (Prod)
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ secrets.PROD_REGISTRY_USERNAME }}
-          password: ${{ secrets.PROD_REGISTRY_PASSWORD }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
 
-      - name: Build and push Docker image to prod
+      - name: Build & push Docker image (Prod)
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}/prod-nodeapp:latest
+          tags: ghcr.io/${{ github.repository }}/nodeapp-prod:latest
