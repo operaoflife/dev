@@ -1,6 +1,6 @@
 // A simple HTTP server example
 const http = require('http');
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3000;
 
 const requestHandler = (req, res) => 
   res.writeHead(200, { 'Content-Type': 'text/plain' });
