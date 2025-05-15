@@ -1,3 +1,4 @@
+# Use a lightweight Node.js base image
 FROM node:14-alpine
 
 # Create app directory
