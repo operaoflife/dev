@@ -1,12 +1,9 @@
 {
-  "name": "operaoflife/simple-app",
+  "name": "simple-index-app",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"No tests defined\""
+    "start": "node index.js"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  }
+  "dependencies": {}
 }

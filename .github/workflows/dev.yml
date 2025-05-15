@@ -1,34 +1,36 @@
-name: Dev CI & Publish
+name: Publish Docker image (Dev)
 
 on:
   push:
-    branches: [ develop ]
+    branches: ['develop']
 
 jobs:
-  build-test-publish:
+  push_to_registry:
+    name: Push Docker image to GitHub Container Registry (Dev)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Check out the repo
         uses: actions/checkout@v3
-
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
         with:
-          node-version: 16
-          registry-url: https://npm.pkg.github.com/
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-
-      - name: Bump prerelease version (dev)
-        run: |
-          npm version prerelease --preid=dev
-          echo "New version: $(node -p \"require('./package.json').version\")"
-
-      - name: Publish to GitHub Packages with `dev` tag
-        run: npm publish --tag dev
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata (tags, labels) for Docker (Dev)
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          registry: ghcr.io
+          # we’ll tag as ghcr.io/OWNER/REPO-dev:...
+          images: ghcr.io/${{ github.repository }}-dev
+      
+      - name: Build and push Docker image (Dev)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
