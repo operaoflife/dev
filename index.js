@@ -1,9 +1,11 @@
-const http = require('http');
-const port = process.env.PORT || 3000;
+const express = require('express')
+const app = express()
+const port = 3000
 
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello from CI/CD pipeline!');
-}).listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+app.get('/', (req, res) => {
+  res.send('Hello from CI/CD Pipeline!')
+})
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`)
+})
