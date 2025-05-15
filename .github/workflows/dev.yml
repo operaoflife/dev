@@ -1,7 +1,9 @@
 name: Dev CI
+
 on:
   push:
     branches: [ develop ]
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
