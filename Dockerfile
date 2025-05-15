@@ -1,12 +1,11 @@
-FROM node:14-alpine
-WORKDIR /app
+# Use Node.js LTS
+FROM node:18-alpine
 
-# Install production dependencies
-COPY package*.json ./
+WORKDIR /app
+COPY package.json ./
 RUN npm install --production
 
-# Copy app code
 COPY index.js ./
 
-# Run the app
+EXPOSE 3000
 CMD ["node", "index.js"]
