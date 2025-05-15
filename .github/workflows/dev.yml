@@ -8,9 +8,37 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout your code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Set up Node.js and point at GitHub Packages
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: https://npm.pkg.github.com/
+          always-auth: true
+
+      # 3. Authenticate npm to GH Packages
+      - name: Authenticate to GitHub Packages
+        run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 5. If install fails, dump the npm debug log for diagnosis
+      - name: 🐛 Dump npm debug log
+        if: failure()
+        run: |
+          echo "Contents of ~/.npm/_logs/:"
+          ls -lah ~/.npm/_logs
+          echo
+          echo "---- DEBUG LOG ----"
+          cat ~/.npm/_logs/*-debug-0.log
+
+      # 6. Log in to GHCR for Docker push
       - name: Log in to GitHub Packages (GHCR)
         uses: docker/login-action@v2
         with:
@@ -18,10 +46,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and publish Docker image to Dev package
+      # 7. Build & publish your Docker image
+      - name: Build & publish Docker image to Dev package
+        id: publish
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/simple-app-dev:latest
+
+      # 8. Echo out the image digest & tags for easy verification
+      - name: Show pushed image info
+        run: |
+          echo "🔥 Image digest: ${{ steps.publish.outputs.digest }}"
+          echo "🏷️  Tags: ${{ steps.publish.outputs.tags }}"
