@@ -1,25 +1,34 @@
-name: Build & Push Dev Image
+name: Dev CI & Publish
+
 on:
   push:
-    branches:
-      - develop
+    branches: [ develop ]
 
 jobs:
-  build-and-push:
+  build-test-publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/${{ github.repository }}-dev:latest
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Bump prerelease version (dev)
+        run: |
+          npm version prerelease --preid=dev
+          echo "New version: $(node -p \"require('./package.json').version\")"
+
+      - name: Publish to GitHub Packages with `dev` tag
+        run: npm publish --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
