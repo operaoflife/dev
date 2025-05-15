@@ -1,14 +1,7 @@
-FROM node:14-alpine
-
-# Create app directory
+FROM node:18-alpine
 WORKDIR /app
-
-# Install dependencies (if you have package.json)
 COPY package*.json ./
-RUN npm install --production
-
-# Bundle app source
-COPY index.js ./
-
-# Define runtime command
+RUN npm install
+COPY . .
+EXPOSE 3000
 CMD ["node", "index.js"]

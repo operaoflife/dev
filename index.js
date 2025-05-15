@@ -1,18 +1,11 @@
-// A simple HTTP server example
-const http = require('http');
-const port = process.env.PORT || 3000;
+const express = require('express')
+const app = express()
+const port = 3000
 
-const requestHandler = (req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello from GitHub Actions CI/CD without Docker!');
-};
+app.get('/', (req, res) => {
+  res.send('Hello from CI/CD Pipeline!')
+})
 
-const server = http.createServer(requestHandler);
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
-"// trigger Dev CI" 
-"// trigger Dev CI" 
-"// trigger Dev CI" 
-"// trigger Dev CI" 
-"// trigger Dev CI" 
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`)
+})
