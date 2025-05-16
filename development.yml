@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dev-app
+  template:
+    metadata:
+      labels:
+        app: dev-app
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret  # Reference the secret
+      containers:
+      - name: dev-app
+        image: ghcr.io/operaoflife/dev/dev-app:f64ec32c60402e7ddf6c900565c72f04332d5811
+        ports:
+        - containerPort: 3000
