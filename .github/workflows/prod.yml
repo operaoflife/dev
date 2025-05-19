@@ -1,36 +1,46 @@
-name: Prod Build and Push
-
+name: Prod Deployment
 on:
   push:
-    branches: [ "master" ]
+    branches: [master]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/prod-app
+  GITHUB_USER: your-github-username
+  CLUSTER_NAME: prod-cluster
+  ZONE: us-central1-c
 
 jobs:
-  build-and-push:
+  build-push:
+    strategy:
+      matrix:
+        service: [frontend, backend]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Docker Build/Push
+      uses: docker/build-push-action@v4
+      with:
+        context: ./${{ matrix.service }}
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.GITHUB_USER }}/prod-${{ matrix.service }}:latest
+          ${{ env.REGISTRY }}/${{ env.GITHUB_USER }}/prod-${{ matrix.service }}:${{ github.sha }}
+        file: ./${{ matrix.service }}/Dockerfile
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup GCP
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GCP_PROJECT }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Deploy to Production
+      run: |
+        gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE
+        kubectl apply -f k8s/
+        kubectl rollout restart deployment/frontend
+        kubectl rollout restart deployment/backend
