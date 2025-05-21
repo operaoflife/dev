@@ -3,9 +3,7 @@ kind: Service
 metadata:
   name: backend-service
   namespace: ci-cd
-  annotations:
-    cloud.google.com/backend-config: '{"default": "backend-config"}'
-spec:
+spec:  # Remove the annotations block
   type: ClusterIP
   selector:
     app: backend

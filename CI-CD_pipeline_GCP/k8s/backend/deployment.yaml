@@ -22,9 +22,11 @@ spec:
         app: backend
         env: production
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: backend
-        image: ghcr.io/operaoflife/prod-backend:latest
+        image: ghcr.io/operaoflife/dev-backend:5bf1a5f46c84e64eef24c35fc44f4b4236ed1e98
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
@@ -46,9 +48,12 @@ spec:
             port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /api/health
             port: 3000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 15  # Increased from 5
           periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
