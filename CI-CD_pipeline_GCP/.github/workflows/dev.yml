@@ -1,0 +1,34 @@
+name: Dev Deployment
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push:
+    strategy:
+      matrix:
+        service: [frontend, backend]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: operaoflife
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and Push
+      uses: docker/build-push-action@v4
+      with:
+        context: ./${{ matrix.service }}
+        push: true
+        tags: |
+          ghcr.io/operaoflife/dev-${{ matrix.service }}:latest
+          ghcr.io/operaoflife/dev-${{ matrix.service }}:${{ github.sha }}
+        file: ./${{ matrix.service }}/Dockerfile
